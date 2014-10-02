@@ -1,0 +1,141 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+</head>
+
+<body>
+<h1> flow_chart language specification </h1>
+
+<span class="author"> Miloslav Číž, 2014 </span>
+
+<p> This is a specification of flow_chart esoteric language. </p>
+
+<h2> a brief characteristics of the language </h2>
+
+<p>
+The language is interpreted and its inputs are images of flow charts.
+It is high level, functions and recursion is supported as well as
+common data types including strings and lists.
+</p>
+
+<h2> syntax </h2>
+
+<p>
+The source code medium of flow_chart is, unlike with most computer
+languages, a raster image in PNG or BMP format. However the image should
+be, unlike with for example Piet, human readable as it represents a
+flow chart. We'll suppose the image is represented as an 2D array of RGB
+values, as is common, however, the language is designed to only use
+black and white color in order to be easily printable on paper, though
+other colors are allowed to be used (they'll just be ignored). The black
+colors means [0,0,0] RGB value, the white means [255,255,255] RGB value.
+</p>
+
+<h3> blocks and connections </h3>
+
+<p>
+There exist three types ob blocks that the flow chart consists of, they
+are:
+</p>
+
+<ul>
+  <li>
+    command - Contains a command string (&lt;CMD&gt;), there goes
+    exactly one connection in the block and up to one connection out
+    (if the command is the last command in the function, there is
+    no connection going out).
+  </li>
+  <li>
+    branching - Contains a condition string (&lt;COND&gt;), there
+    goes exactly one connection in and exactly two connections out
+    ("then" and "else" branches).
+  </li>
+  <li> function - Contains a function definition string (&lt;FUNC&gt;),
+    there goes no connection in and exactly one connection out.
+  </li>
+</ul>
+
+<p>
+The bloocks look like this:
+</p>
+
+<img src="images/blocks.png" alt="blocks" />
+
+<p>
+The width and height of the blocks doesn't matter, but they cannot be
+empty so the theoretical minimum size depends on the size of a single
+text character. The block border must always be black and one pixel
+wide. The function start block must always have double line
+border with exactly one non-black pixel between the two border lines,
+as in the picture. The branching block left (right) border must be a
+line that starts going one pixel left (right) and one down, then at
+some point it must change to going one pixel right (left) and one down,
+before it connects to the bottom border line of the block. Therefore
+other possible valid blocks can look like this:
+<p>
+
+<img src="images/blocks2.png" alt="other possible blocks" />
+
+<p>
+A block must always contain a non-empty string. The string can be
+placed anywhere inside the block, it can even touch the border, but it
+must not overlap it. The text must be written in black color and
+it must use the font described in this document.
+</p>
+
+<p>
+The blocks are connected using lines with arrows (which represent the
+control flow):
+</p>
+
+<img src="images/lines.png" alt="lines" />
+
+<p>
+The lines can overlap in a way that's apparent from the picture - one of
+the lines must have a one pixel white border around it in order to
+distinguish the two lines from each other. The arrow must have exactly
+the shape as in the picture, it can be pointing in each of four
+directions (left, right, up, bottom).
+</p>
+
+<p>
+Each line must always be connecting either two blocks or a block to
+another line. It doesn't matter at which point the line
+comes from or into a block or a line (its direction is decided by the
+arrow) with the exception of branching block, where the input and "then"
+lines must come either to/from the top border or to/from bottom border
+and the "else" line must come from the tip of either left or right
+border line. The followinf picture shows some valid block connections:
+</p>
+
+<img src="images/connections.png" alt="possible connections" />
+
+<h3> font </h3>
+
+<p>
+The language uses its own fixed size ASCII font to represent text
+elements. The character size is 7 x 8 pixels and there is exactly one
+pixel space between the characters.
+</p>
+
+<h3> text syntax </h3>
+
+<p>
+  The following grammar describes the syntax of the language text
+  elements:
+</p>
+
+<table>
+  <tr> <td> &lt;CMD&gt; </td> <td> &#10141; </td> <td> </td> </tr>
+
+</table>
+
+<p> </p>
+
+
+<h2> examples </h2>
+
+</body>
+
+</html>
