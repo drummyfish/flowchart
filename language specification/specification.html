@@ -23,8 +23,8 @@ common data types including strings and lists.
 
 <p>
 The source code medium of flow_chart is, unlike with most computer
-languages, a raster image in PNG or BMP format. However the image should
-be, unlike with for example Piet, human readable as it represents a
+languages, a raster image in PNG or BMP format. However, the image
+should be, unlike with for example Piet, human readable as it represents a
 flow chart. We'll suppose the image is represented as an 2D array of RGB
 values, as is common, however, the language is designed to only use
 black and white color in order to be easily printable on paper, though
@@ -119,20 +119,105 @@ elements. The character size is 7 x 8 pixels and there is exactly one
 pixel space between the characters.
 </p>
 
+<img src="images/font.png" alt="font" />
+
 <h3> text syntax </h3>
 
 <p>
-  The following grammar describes the syntax of the language text
-  elements:
+  The language is case-sensitive. The following grammar describes the
+  syntax of the language text elements:
 </p>
 
 <table>
-  <tr> <td> &lt;CMD&gt; </td> <td> &#10141; </td> <td> </td> </tr>
-
+  <tr> <td> &lt;CMD&gt; </td>      <td> &#10141; </td>   <td> &lt;ASSIGN&gt; | &lt;CALL&gt; | return &lt;EXP&gt; </td> </tr>
+  <tr> <td> &lt;ASSIGN&gt; </td>   <td> &#10141; </td>   <td> &lt;VAR&gt; &#8592; &lt;EXP&gt; | &lt;INIT&gt; </td> </tr>
+  <tr> <td> &lt;INIT&gt; </td>     <td> &#10141; </td>   <td> list </td> </tr>
+  <tr> <td> &lt;VAR&gt; </td>      <td> &#10141; </td>   <td> &lt;IDENTIFIER&gt; | &lt;IDENTIFIER&gt; [ &lt;EXP&gt; ] </td> </tr>
+  <tr> <td> &lt;EXP&gt; </td>      <td> &#10141; </td>   <td> ( &lt;EXP&gt; ) | &lt;VAR&gt; | &lt;CALL&gt; | &lt;CONST&gt; | &lt;EXP&gt; &lt;OP&gt; &lt;EXP&gt; </td> </tr>
+  <tr> <td> &lt;OP&gt; </td>       <td> &#10141; </td>   <td> + | - | &#247; | / | * | &#215; | % | <img src="images/mod.png" /> </td> </tr>
+  <tr> <td> &lt;CONST&gt; </td>    <td> &#10141; </td>   <td> &lt;INT&gt; | &lt;FLOAT&gt; | &lt;STRING&gt; | &lt;BOOL&gt; </td> </tr>
+  <tr> <td> &lt;COND&gt; </td>     <td> &#10141; </td>   <td> &lt;EXP&gt; &lt;CMP&gt; &lt;EXP&gt; </td> </tr>
+  <tr> <td> &lt;CMP&gt; </td>      <td> &#10141; </td>   <td> = | &ne; | "&lt;" | "&gt;" | &ge; | &le; </td> </tr>
+  <tr> <td> &lt;CALL&gt; </td>     <td> &#10141; </td>   <td> &lt;IDENTIFIER&gt; ( &lt;PARAMS&gt; ) </td> </tr>
+  <tr> <td> &lt;FUNC&gt; </td>     <td> &#10141; </td>   <td> &lt;IDENTIFIER&gt; ( &lt;PARAM_LIST&gt; ) </td> </tr>
 </table>
 
-<p> </p>
+<p>
+The language keywords (that of course can't be used as identifiers) are
+shown in the following list:
+</p>
 
+<ul>
+  <li> false </li>
+  <li> list </li>
+  <li> main </li>
+  <li> return </li>
+  <li> true </li>
+</ul>
+
+<h2> semantics </h2>
+
+<h1> data types </h1>
+
+<p>
+There are four atomic and one composite data types in flow_chart. These
+are:
+</p>
+
+<ul>
+  <li>
+    int - Holds at least 16-bit signed integer value.
+  </li>
+
+  <li>
+    float - Floating point number in at least single precision.
+  </li>
+
+  <li>
+    string - String of ASCII characters.
+  </li>
+
+  <li>
+    bool - Holds exactly one of two values: true or false.
+  </li>
+
+  <li>
+    list - List is the only composite data type. It serves as dynamic
+    heterogenous array of values or other lists. It's behavior is
+    similar to lists in Python. The indexing uses int values (including
+    negative values).
+  </li>
+
+</ul>
+
+
+<h1> function calls </h1>
+
+<p>
+Recursion, even indirect, is allowed. The function has access to its callee's scope,
+it means it can see and use it's variables. If there is a function
+named <i>n1</i> inside function <i>f1</i> called from function <i>f2</i>
+and there is also a variable named <i>n1</i> in function <i>f2</i>, then
+if function <i>f1</i> uses name <i>n1</i> to reference a variable, the
+variable that was created in function <i>f1</i> is referenced, as
+expected. Parameters of atomic data types (int, float,
+string and bool) are passed by value, lists are passed by reference.
+The function can return any atomic data type, lists can't be returned.
+</p>
+
+<h1> built-in functions </h1>
+
+<ul>
+  <li> print(what) - </li>
+  <li> read_string(): string - </li>
+  <li> read_int(): string - </li>
+  <li> read_float(): string - </li>
+  <li> wait(milliseconds) - </li>
+  <li> type(what): string - </li>
+  <li> length(what): int - Returns length of given <i>what</i> list or -1 if <i>what</i> is not a list. </li>
+</ul>
+
+<h2> standard libraries </h2>
 
 <h2> examples </h2>
 
