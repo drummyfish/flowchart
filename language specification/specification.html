@@ -2,6 +2,15 @@
 
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+
+<style>
+
+.todo
+  {
+    color: gray;
+  }
+
+</style>
 </head>
 
 <body>
@@ -14,9 +23,10 @@
 <h2> a brief characteristics of the language </h2>
 
 <p>
-The language is interpreted and its inputs are images of flow charts.
-It is high level, functions and recursion is supported as well as
-common data types including strings and lists.
+flow_chart is high-level, imperative (routine-based), interpreted
+language, whose inputs are raster images of flow charts.
+Recursion is supported as well as common data types including strings
+and lists.
 </p>
 
 <h2> syntax </h2>
@@ -35,24 +45,32 @@ colors means [0,0,0] RGB value, the white means [255,255,255] RGB value.
 <h3> blocks and connections </h3>
 
 <p>
-There exist three types ob blocks that the flow chart consists of, they
+There exist four types ob blocks that the flow chart consists of, they
 are:
 </p>
 
 <ul>
   <li>
     command - Contains a command string (&lt;CMD&gt;), there goes
-    exactly one connection in the block and up to one connection out
+    a minimum of one connection to the block and up to one connection out
     (if the command is the last command in the function, there is
     no connection going out).
   </li>
   <li>
     branching - Contains a condition string (&lt;COND&gt;), there
-    goes exactly one connection in and exactly two connections out
+    goes up to one connection in and exactly two connections out
     ("then" and "else" branches).
   </li>
-  <li> function - Contains a function definition string (&lt;FUNC&gt;),
+  <li>
+    function - Contains a function definition string (&lt;FUNC&gt;),
     there goes no connection in and exactly one connection out.
+  </li>
+  <li>
+    directive - Contains directive information string (&lt;DIR&gt;),
+    such as includes, global variables or constants. There can only be
+    one directive block in one program
+    image and this block can have no connections, it just serves as
+    program header.
   </li>
 </ul>
 
@@ -66,9 +84,10 @@ The bloocks look like this:
 The width and height of the blocks doesn't matter, but they cannot be
 empty so the theoretical minimum size depends on the size of a single
 text character. The block border must always be black and one pixel
-wide. The function start block must always have double line
-border with exactly one non-black pixel between the two border lines,
-as in the picture. The branching block left (right) border must be a
+wide. The function start block must always have three-pixel wide border.
+The directive border must have double border consisting of one black,
+one non black and one black pixels, as in the picture.
+The branching block left (right) border must be a
 line that starts going one pixel left (right) and one down, then at
 some point it must change to going one pixel right (left) and one down,
 before it connects to the bottom border line of the block. Therefore
@@ -78,6 +97,12 @@ other possible valid blocks can look like this:
 <img src="images/blocks2.png" alt="other possible blocks" />
 
 <p>
+The following examples are wrong:
+</p>
+
+<img src="images/blocks_bad.png" alt="other possible blocks" />
+
+<p>
 A block must always contain a non-empty string. The string can be
 placed anywhere inside the block, it can even touch the border, but it
 must not overlap it. The text must be written in black color and
@@ -85,8 +110,9 @@ it must use the font described in this document.
 </p>
 
 <p>
-The blocks are connected using lines with arrows (which represent the
-control flow):
+The blocks are connected using one-pixel wide straight (horizontal or
+vertical) lines with arrows (which represent the control flow) as in
+the picture:
 </p>
 
 <img src="images/lines.png" alt="lines" />
@@ -100,8 +126,10 @@ directions (left, right, up, bottom).
 </p>
 
 <p>
-Each line must always be connecting either two blocks or a block to
-another line. It doesn't matter at which point the line
+Each line must always be connecting exactly two blocks that are
+connected to the same function block (that means there can be no goto
+from within one function to another). It doesn't
+matter at which point the line
 comes from or into a block or a line (its direction is decided by the
 arrow) with the exception of branching block, where the input and "then"
 lines must come either to/from the top border or to/from bottom border
@@ -111,21 +139,44 @@ border line. The followinf picture shows some valid block connections:
 
 <img src="images/connections.png" alt="possible connections" />
 
+<p>
+The folowing examples are wrong:
+</p>
+
+<img src="images/connections_bad.png" alt="possible connections" />
+
+<h3> comments </h3>
+
+<p>
+Comments can be writen (or drawn) anywhere as long as they are other
+color than black and they do not interfere with the code. The reason
+for this is that the interpreter only recognises black and non-black
+pixels.
+</p>
+
 <h3> font </h3>
 
 <p>
-The language uses its own fixed size ASCII font to represent text
-elements. The character size is 7 x 8 pixels and there is exactly one
-pixel space between the characters.
+The language uses its own fixed size extended ASCII font to represent text
+elements. The character size is 7&nbsp;&#215;&nbsp;8 pixels and there is exactly one
+pixel space between the characters. The font characters look like this
+(starting from top left, going to bottom right with 1 pixel space between
+rows and columns)
 </p>
 
 <img src="images/font.png" alt="font" />
 
+<p>
+Language interpreters may include the possibility to provide custom
+font maps but the program is then formally not in pure flow_chart which
+only supports the font given above.
+</p>
+
 <h3> text syntax </h3>
 
 <p>
-  The language is case-sensitive. The following grammar describes the
-  syntax of the language text elements:
+The language is case-sensitive. The following grammar describes the
+syntax of the language text elements:
 </p>
 
 <table>
@@ -140,6 +191,19 @@ pixel space between the characters.
   <tr> <td> &lt;CMP&gt; </td>      <td> &#10141; </td>   <td> = | &ne; | "&lt;" | "&gt;" | &ge; | &le; </td> </tr>
   <tr> <td> &lt;CALL&gt; </td>     <td> &#10141; </td>   <td> &lt;IDENTIFIER&gt; ( &lt;PARAMS&gt; ) </td> </tr>
   <tr> <td> &lt;FUNC&gt; </td>     <td> &#10141; </td>   <td> &lt;IDENTIFIER&gt; ( &lt;PARAM_LIST&gt; ) </td> </tr>
+
+  <tr> <td> &lt;DIR&gt; </td>      <td> &#10141; </td>   <td> uses &lt;PATH&gt; | &lt;IDENTIFIER&gt; = &lt;CONST&gt; | &lt;IDENTIFIER&gt; &#8592; &lt;CONST&gt; </td> </tr>
+</table>
+
+<p>
+Some of the above nonterminals are described by regexps:
+</p>
+
+<table>
+  <tr> <td> &lt;IDENTIFIER&gt; </td> <td> := </td>   <td> ([a-Z] | "_") (([a-Z] | [0-9] | "_")*) </td> </tr>
+  <tr> <td> &lt;FLOAT&gt; </td>      <td> := </td>   <td>  </td> </tr>
+  <tr> <td> &lt;BOOL&gt; </td>       <td> := </td>   <td> "true" | "false" </td> </tr>
+  <tr> <td> &lt;STRING&gt; </td>     <td> := </td>   <td> \" () \" </td> </tr>
 </table>
 
 <p>
@@ -190,17 +254,19 @@ are:
 
 </ul>
 
+<p class="todo">
+global variables?
+</p>
+
+<p class="todo">
+overloading?
+</p>
 
 <h1> function calls </h1>
 
 <p>
-Recursion, even indirect, is allowed. The function has access to its callee's scope,
-it means it can see and use it's variables. If there is a function
-named <i>n1</i> inside function <i>f1</i> called from function <i>f2</i>
-and there is also a variable named <i>n1</i> in function <i>f2</i>, then
-if function <i>f1</i> uses name <i>n1</i> to reference a variable, the
-variable that was created in function <i>f1</i> is referenced, as
-expected. Parameters of atomic data types (int, float,
+Recursion, even indirect, is allowed. Parameters of atomic data types
+(int, float,
 string and bool) are passed by value, lists are passed by reference.
 The function can return any atomic data type, lists can't be returned.
 </p>
@@ -209,6 +275,12 @@ The function can return any atomic data type, lists can't be returned.
 
 <ul>
   <li> print(what) - </li>
+  <li> open_file(filename): int - Opens file named <i>filename</i> (it must be string, otherwise nothing happens) and returns its positive integer handle, in case of error -1 is returned. </li>
+  <li> close_file(handle) - Close file with given handle, if <i>handle</i> isn't of int type or it is negative or it is not asociated with any file, nothing happens. </li>
+
+
+  <li> read(file_handle) - </li>
+  <li> read() - </li>
   <li> read_string(): string - </li>
   <li> read_int(): string - </li>
   <li> read_float(): string - </li>
@@ -220,6 +292,20 @@ The function can return any atomic data type, lists can't be returned.
 <h2> standard libraries </h2>
 
 <h2> examples </h2>
+
+<ul>
+
+<li>
+<p> simple hello world: </p>
+<img src="images/program1.png" alt="program 1" />
+</li>
+
+<li>
+<p> hello world using global variables, functions and constants: </p>
+<img src="images/program2.png" alt="program 2" />
+</li>
+
+</ul>
 
 </body>
 
