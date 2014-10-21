@@ -10,6 +10,27 @@
     color: gray;
   }
 
+h1
+  {
+    font-size: 40pt;
+  }
+
+h2
+  {
+    font-size: 30pt;
+  }
+
+table
+  {
+    border-collapse: collapse;
+  }
+
+.normal_table td
+  {
+    border: 1px solid black;
+    padding: 5px;
+  }
+
 </style>
 </head>
 
@@ -176,7 +197,8 @@ only supports the font given above.
 
 <p>
 The language is case-sensitive. The following grammar describes the
-syntax of the language text elements:
+syntax (and only syntax, not expression evaluation order etc.) of the
+language text elements:
 </p>
 
 <table>
@@ -185,13 +207,12 @@ syntax of the language text elements:
   <tr> <td> &lt;INIT&gt; </td>     <td> &#10141; </td>   <td> list </td> </tr>
   <tr> <td> &lt;VAR&gt; </td>      <td> &#10141; </td>   <td> &lt;IDENTIFIER&gt; | &lt;IDENTIFIER&gt; [ &lt;EXP&gt; ] </td> </tr>
   <tr> <td> &lt;EXP&gt; </td>      <td> &#10141; </td>   <td> ( &lt;EXP&gt; ) | &lt;VAR&gt; | &lt;CALL&gt; | &lt;CONST&gt; | &lt;EXP&gt; &lt;OP&gt; &lt;EXP&gt; </td> </tr>
-  <tr> <td> &lt;OP&gt; </td>       <td> &#10141; </td>   <td> + | - | &#247; | / | * | &#215; | % | <img src="images/mod.png" /> </td> </tr>
+  <tr> <td> &lt;OP&gt; </td>       <td> &#10141; </td>   <td> + | - | &#247; | / | * | &#215; | % | <img src="images/mod.png" /> | &#172; </td> </tr>
   <tr> <td> &lt;CONST&gt; </td>    <td> &#10141; </td>   <td> &lt;INT&gt; | &lt;FLOAT&gt; | &lt;STRING&gt; | &lt;BOOL&gt; </td> </tr>
   <tr> <td> &lt;COND&gt; </td>     <td> &#10141; </td>   <td> &lt;EXP&gt; &lt;CMP&gt; &lt;EXP&gt; </td> </tr>
   <tr> <td> &lt;CMP&gt; </td>      <td> &#10141; </td>   <td> = | &ne; | "&lt;" | "&gt;" | &ge; | &le; </td> </tr>
   <tr> <td> &lt;CALL&gt; </td>     <td> &#10141; </td>   <td> &lt;IDENTIFIER&gt; ( &lt;PARAMS&gt; ) </td> </tr>
   <tr> <td> &lt;FUNC&gt; </td>     <td> &#10141; </td>   <td> &lt;IDENTIFIER&gt; ( &lt;PARAM_LIST&gt; ) </td> </tr>
-
   <tr> <td> &lt;DIR&gt; </td>      <td> &#10141; </td>   <td> uses &lt;PATH&gt; | &lt;IDENTIFIER&gt; = &lt;CONST&gt; | &lt;IDENTIFIER&gt; &#8592; &lt;CONST&gt; </td> </tr>
 </table>
 
@@ -221,7 +242,7 @@ shown in the following list:
 
 <h2> semantics </h2>
 
-<h1> data types </h1>
+<h3> data types </h3>
 
 <p>
 There are four atomic and one composite data types in flow_chart. These
@@ -248,21 +269,86 @@ are:
   <li>
     list - List is the only composite data type. It serves as dynamic
     heterogenous array of values or other lists. It's behavior is
-    similar to lists in Python. The indexing uses int values (including
-    negative values).
+    similar to lists in Python. The indexing uses int values. Negative
+    values can be used for indexing, but they behave differently than
+    in Python, i.e. index -1 doesn't address the last position in the
+    list but rather an unique position "-1".
   </li>
 
 </ul>
 
-<p class="todo">
-global variables?
+<h3> variables </h3>
+
+<p>
+flow_chart is dynamic-typed, that means that variables can change type
+during runtime. A new variable is created when it is first assigned to,
+using "&#8592;" symbol.
 </p>
 
-<p class="todo">
-overloading?
+<p>
+There can be global variables, see section
+<a href="#global_directives">global directives</a>.
 </p>
 
-<h1> function calls </h1>
+<p>
+A function has only access to its variables (variables declared inside
+itself) and global variables. If there is a global variable of some
+name, there cannot be any local variable with that name anywhere else
+in the program, as it cannot be created, because this is done by
+assignement which in this case just causes assignment to already
+existing global variable.
+</p>
+
+<h3 id="global_directives"> global directives </h3>
+
+<p>
+Global variables can be declared in directive block. To declare a
+global variable it must also be initialised with a value, using
+"&#8592;" symbol.
+</p>
+
+<p>
+Besides global variables, global constants can be declared as well.
+Constants can only be read, any attempt to write to a global constant
+must result in compile-time error. In order to declare a global constant
+a value must be linked to it, using "=" symbol.
+</p>
+
+<h3> expressions </h3>
+
+<p>
+Operator priority is as follows:
+</p>
+
+<table class="normal_table">
+  <tr> <th> priority </th> <th> operators </th> </tr>
+  <tr> <td> 1 (highest) </td> <td> ( ) [] </td> </tr>
+  <tr> <td> 2 </td> <td> &#172; </td> </tr>
+  <tr> <td> 3 </td> <td> &#215; &#247; </td> </tr>
+  <tr> <td> 4 </td> <td> <img src="images/mod.png" /> </td> </tr>
+  <tr> <td> 5 </td> <td> + - </td> </tr>
+</table>
+
+<p>
+The operator semantics is as follows:
+</p>
+
+<table class="normal_table">
+  <tr> <th> operator(s) </th>                                         <th> operand types </th>  <th> result type </th>  <th> description </th>    </tr>
+  <tr> <td rowspan="4"> a + b, a - b, a &#215; b, a &#247; b  </td>   <td> int int       </td>  <td> int </td>          <td rowspan="4"> addition, substraction, multiplication and floating point division </td> </tr>
+  <tr>                                                                <td> float float   </td>  <td> float </td>                                  </tr>
+  <tr>                                                                <td> int float     </td>  <td> float </td>                                  </tr>
+  <tr>                                                                <td> float int     </td>  <td> float </td>                                  </tr>
+  <tr> <td rowspan="4"> a &lt; b, a &gt; b, a &le; b, a &ge; b  </td> <td> int int       </td>  <td> bool </td>         <td rowspan="4"> less than, greater than, less or equal to, greater or equal to </td> </tr>
+  <tr>                                                                <td> float float   </td>  <td> bool </td>                                   </tr>
+  <tr>                                                                <td> int float     </td>  <td> bool </td>                                   </tr>
+  <tr>                                                                <td> float int     </td>  <td> bool </td>                                   </tr>
+  <tr> <td> &#172; a </td>            <td> bool          </td>  <td> bool </td>    <td> logical negation (false to true and true to false) </td> </tr>
+
+
+</table>
+
+<h3> functions </h3>
 
 <p>
 Recursion, even indirect, is allowed. Parameters of atomic data types
@@ -271,7 +357,12 @@ string and bool) are passed by value, lists are passed by reference.
 The function can return any atomic data type, lists can't be returned.
 </p>
 
-<h1> built-in functions </h1>
+<p>
+Function parameters behave just as if they were variables created at the
+beginning of the function.
+</p>
+
+<h3> built-in functions </h3>
 
 <ul>
   <li> print(what) - </li>
@@ -289,7 +380,7 @@ The function can return any atomic data type, lists can't be returned.
   <li> length(what): int - Returns length of given <i>what</i> list or -1 if <i>what</i> is not a list. </li>
 </ul>
 
-<h2> standard libraries </h2>
+<h3> standard libraries </h3>
 
 <h2> examples </h2>
 
