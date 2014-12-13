@@ -238,6 +238,9 @@ shown in the following list:
   <li> main </li>
   <li> return </li>
   <li> true </li>
+  <li> stdin </li>
+  <li> stderr </li>
+  <li> stdout </li>
 </ul>
 
 <h2> semantics </h2>
@@ -365,19 +368,29 @@ beginning of the function.
 <h3> built-in functions </h3>
 
 <ul>
-  <li> print(what) - </li>
-  <li> open_file(filename): int - Opens file named <i>filename</i> (it must be string, otherwise nothing happens) and returns its positive integer handle, in case of error -1 is returned. </li>
-  <li> close_file(handle) - Close file with given handle, if <i>handle</i> isn't of int type or it is negative or it is not asociated with any file, nothing happens. </li>
-
-
-  <li> read(file_handle) - </li>
-  <li> read() - </li>
-  <li> read_string(): string - </li>
-  <li> read_int(): string - </li>
-  <li> read_float(): string - </li>
-  <li> wait(milliseconds) - </li>
-  <li> type(what): string - </li>
-  <li> length(what): int - Returns length of given <i>what</i> list or -1 if <i>what</i> is not a list. </li>
+  <li> <tt>print(what,filehandle)</tt> - Prints out the <tt>what</tt> variable, without a newline, to a file with <tt>filehandle</tt> handle. If <tt>filehandle</tt> is not associated with any file, nothing happens. The function does the following depending on the data type of <tt>what</tt>:
+    <ul>
+      <li> int - Prints the decimal value of the integer, specified by the following regular expression: (0|(-|"")[1-9][0-9]*).</li>
+      <li> float - Prints the decimal value of the float in format specified by the following regular expression: (0|(-|"")[1-9][0-9]*)(.[0-9]|"").</li>
+      <li> string - Prints the whole string, character by character. No escape sequences are processed. </li>
+      <li> bool - Prints <tt>"true"</tt> or <tt>"false"</tt> depending on the value. </li>
+      <li> list - Prints the list in format <tt>"[X1, X2, ... XN]"</tt> where <tt>Xi</tt> is a string value of given list item obtained by printing it with <tt>print(Xi)</tt>. </li>
+    </ul>
+  </li>
+  <li> <tt>print(what)</tt> - Equal to <tt>print(what,stdout)</tt>. </li>
+  <li> <tt>print_newline(filehandle)</tt> - Prints a newline charater to file with <tt>filehandle</tt> handle. If <tt>filehandle</tt> is not associated with any file, nothing happens. </li>
+  <li> <tt>print_newline()</tt> - Equal to <tt>print_newline(stdout)</tt>. </li>
+  <li> <tt>to_string(what): string</tt> - Converts <tt>what</tt> variable to string acoording to rules described in print(what,filehandle) function reference and returns the result. </li>
+  <li> <tt>open_file(filename): int</tt> - Opens file named <tt>filename</tt> (it must be string, otherwise nothing happens) and returns its positive integer handle, in case of error -1 is returned. </li>
+  <li> <tt>close_file(handle)</tt> - Close file with given handle, if <tt>handle</tt> isn't of int type or it is negative or it is not associated with any file, nothing happens. </li>
+  <li> <tt>read_line(filehandle): string</tt> - Reads a whole line from a file with <tt>filehandle</tt> handle and moves the file cursor to the next line. If <tt>filehandle</tt> is not associated to any file or end of file has been reached, <tt>""</tt> is returned. </li>
+  <li> <tt>read_char(filehandle): string</tt> - Behaves the same as <tt>read_line(filehandle)</tt> except only one character is read and returned as string, file cursor is moved to the next character (newline character is skipped as it's not considered a character). </li>
+  <li> <tt>read_line(): string</tt> - Equal to <tt>read_line(stdin)</tt>. </li>
+  <li> <tt>read_char(): string</tt> - Equal to <tt>read_char(stdin)</tt>. </li>
+  <li> <tt>is_eof(filehandle): bool</tt> - Return true if the end of file has been reached with the file cursor for a file associated with <tt>filehandle</tt> handle or if <tt>filehandle</tt> is not associated to any file, otherwise false. </li>
+  <li> <tt>wait(milliseconds)</tt> - Stops the program execution for <tt>milliseconds</tt> milliseconds. </li>
+  <li> <tt>type(what): string</tt> - Returns a string representing the data type of <tt>what</tt> (<tt>"int"</tt>, <tt>"float"</tt>, <tt>"string"</tt>, <tt>"bool"</tt> or <tt>"list"</tt>).</li>
+  <li> <tt>length(what): int</tt> - Returns length of given <tt>what</tt> list or -1 if <tt>what</tt> is not a list. </li>
 </ul>
 
 <h3> standard libraries </h3>
