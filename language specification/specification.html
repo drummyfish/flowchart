@@ -50,6 +50,48 @@ Recursion is supported as well as common data types including strings
 and lists.
 </p>
 
+<h2> interpreter </h2>
+
+<p>
+The following paragraphs say the basic idea about the language
+interpreter. These are mostly ideas and recommedations as this document
+mainly focuses on the language itself, however because the language was
+designed with the interpreter idea in mind, anyone implementing the
+interpreter should read this chapter and consider following it as
+closely as possible.
+</p>
+
+<p>
+The language is intended and designed to be interpreted, using bytecode
+is very recommended. The interpreter should be user friendly as is
+usually common with mose copilers/interpreters. If there is any syntax
+or semantics error in the program, the interpreter must let the user
+know and provide them with following information (with exception of
+bytecode without debug information):
+</p>
+
+<ul>
+  <li> error type - syntax, compile-time semantic or run-time semantic </li>
+  <li> place where the error occured in pixture [x,y] pixel coordinates </li>
+  <li> additional details, i.e. which action exactly caused the error </li>
+</ul>
+
+<p>
+The interpreter may print multiple syntax errors that happen during
+program compile.
+</p>
+
+<p>
+The interpreter should be able to produce bytecode only and should be
+able to interpret it even without source code (image) present. The bytecode can
+be generated either with or without debug information. The debug
+information will allow the interpreter to still inform the user about
+run-time errors just as if the program was interpreted from source code.
+If the debug information is not present in the bytecode, the interpreter
+will only inform the user there was an error and what kind of action
+it was caused by, but it mustn't say anything more.
+</p>
+
 <h2> syntax </h2>
 
 <p>
@@ -60,7 +102,8 @@ flow chart. We'll suppose the image is represented as an 2D array of RGB
 values, as is common, however, the language is designed to only use
 black and white color in order to be easily printable on paper, though
 other colors are allowed to be used (they'll just be ignored). The black
-colors means [0,0,0] RGB value, the white means [255,255,255] RGB value.
+color means [0,0,0] RGB value, the white means [255,255,255] RGB value
+(if there is also an alpha channel, it is ignored).
 </p>
 
 <h3> blocks and connections </h3>
@@ -125,7 +168,7 @@ The following examples are wrong:
 
 <p>
 A block must always contain a non-empty string. The string can be
-placed anywhere inside the block, it can even touch the border, but it
+placed anywhere inside the block, it can't touch the border and it
 must not overlap it. The text must be written in black color and
 it must use the font described in this document.
 </p>
@@ -201,31 +244,36 @@ syntax (and only syntax, not expression evaluation order etc.) of the
 language text elements:
 </p>
 
+<tt>
 <table>
-  <tr> <td> &lt;CMD&gt; </td>      <td> &#10141; </td>   <td> &lt;ASSIGN&gt; | &lt;CALL&gt; | return &lt;EXP&gt; </td> </tr>
-  <tr> <td> &lt;ASSIGN&gt; </td>   <td> &#10141; </td>   <td> &lt;VAR&gt; &#8592; &lt;EXP&gt; | &lt;INIT&gt; </td> </tr>
-  <tr> <td> &lt;INIT&gt; </td>     <td> &#10141; </td>   <td> list </td> </tr>
-  <tr> <td> &lt;VAR&gt; </td>      <td> &#10141; </td>   <td> &lt;IDENTIFIER&gt; | &lt;IDENTIFIER&gt; [ &lt;EXP&gt; ] </td> </tr>
-  <tr> <td> &lt;EXP&gt; </td>      <td> &#10141; </td>   <td> ( &lt;EXP&gt; ) | &lt;VAR&gt; | &lt;CALL&gt; | &lt;CONST&gt; | &lt;EXP&gt; &lt;OP&gt; &lt;EXP&gt; </td> </tr>
-  <tr> <td> &lt;OP&gt; </td>       <td> &#10141; </td>   <td> + | - | &#247; | / | * | &#215; | % | <img src="images/mod.png" /> | &#172; </td> </tr>
-  <tr> <td> &lt;CONST&gt; </td>    <td> &#10141; </td>   <td> &lt;INT&gt; | &lt;FLOAT&gt; | &lt;STRING&gt; | &lt;BOOL&gt; </td> </tr>
-  <tr> <td> &lt;COND&gt; </td>     <td> &#10141; </td>   <td> &lt;EXP&gt; &lt;CMP&gt; &lt;EXP&gt; </td> </tr>
-  <tr> <td> &lt;CMP&gt; </td>      <td> &#10141; </td>   <td> = | &ne; | "&lt;" | "&gt;" | &ge; | &le; </td> </tr>
-  <tr> <td> &lt;CALL&gt; </td>     <td> &#10141; </td>   <td> &lt;IDENTIFIER&gt; ( &lt;PARAMS&gt; ) </td> </tr>
-  <tr> <td> &lt;FUNC&gt; </td>     <td> &#10141; </td>   <td> &lt;IDENTIFIER&gt; ( &lt;PARAM_LIST&gt; ) </td> </tr>
-  <tr> <td> &lt;DIR&gt; </td>      <td> &#10141; </td>   <td> uses &lt;PATH&gt; | &lt;IDENTIFIER&gt; = &lt;CONST&gt; | &lt;IDENTIFIER&gt; &#8592; &lt;CONST&gt; </td> </tr>
+  <tr> <td> command: </td> <td> &lt;CMD&gt; </td>      <td> &#10141; </td>   <td> &lt;ASSIGN&gt; | &lt;CALL&gt; | return &lt;EXP&gt; </td> </tr>
+  <tr> <td> assign: </td> <td> &lt;ASSIGN&gt; </td>   <td> &#10141; </td>   <td> &lt;VAR&gt; &#8592; &lt;EXP&gt; | &lt;INIT&gt; </td> </tr>
+  <tr> <td> list constructor: </td> <td> &lt;INIT&gt; </td>     <td> &#10141; </td>   <td> list </td> </tr>
+  <tr> <td> variable or list item: </td> <td> &lt;VAR&gt; </td>      <td> &#10141; </td>   <td> &lt;IDENTIFIER&gt; | &lt;IDENTIFIER&gt; [ &lt;EXP&gt; ] </td> </tr>
+  <tr> <td> expression: </td> <td> &lt;EXP&gt; </td>      <td> &#10141; </td>   <td> ( &lt;EXP&gt; ) | &lt;VAR&gt; | &lt;CALL&gt; | &lt;CONST&gt; | &lt;EXP&gt; &lt;OP&gt; &lt;EXP&gt; </td> </tr>
+  <tr> <td> operator: </td> <td> &lt;OP&gt; </td>       <td> &#10141; </td>   <td> + | - | &#247; | / | * | &#215; | % | <img src="images/mod.png" /> | &#172; </td> </tr>
+  <tr> <td> literal: </td> <td> &lt;CONST&gt; </td>    <td> &#10141; </td>   <td> &lt;INT&gt; | &lt;FLOAT&gt; | &lt;STRING&gt; | &lt;BOOL&gt; </td> </tr>
+  <tr> <td> condition: </td> <td> &lt;COND&gt; </td>     <td> &#10141; </td>   <td> &lt;EXP&gt; &lt;CMP&gt; &lt;EXP&gt; </td> </tr>
+  <tr> <td> comparison operators: </td> <td> &lt;CMP&gt; </td>      <td> &#10141; </td>   <td> = | &ne; | "&lt;" | "&gt;" | &ge; | &le; </td> </tr>
+  <tr> <td> function call: </td> <td> &lt;CALL&gt; </td>     <td> &#10141; </td>   <td> &lt;IDENTIFIER&gt; ( &lt;PARAMS&gt; ) </td> </tr>
+  <tr> <td> function header: </td> <td> &lt;FUNC&gt; </td>     <td> &#10141; </td>   <td> &lt;IDENTIFIER&gt; ( &lt;PARAM_LIST&gt; ) | &lt;IDENTIFIER&gt; () </td> </tr>
+  <tr> <td> formal parameter list: </td> <td> &lt;PARAM_LIST&gt; </td>     <td> &#10141; </td>   <td> &lt;IDENTIFIER&gt; | &lt;IDENTIFIER&gt; , &lt;PARAM_LIST&gt; </td> </tr>
+  <tr> <td> directive: </td> <td> &lt;DIR&gt; </td>      <td> &#10141; </td>   <td> uses &lt;PATH&gt; | &lt;IDENTIFIER&gt; = &lt;CONST&gt; | &lt;IDENTIFIER&gt; &#8592; &lt;CONST&gt; </td> </tr>
 </table>
+</tt>
 
 <p>
 Some of the above nonterminals are described by regexps:
 </p>
 
+<tt>
 <table>
   <tr> <td> &lt;IDENTIFIER&gt; </td> <td> := </td>   <td> ([a-Z] | "_") (([a-Z] | [0-9] | "_")*) </td> </tr>
   <tr> <td> &lt;FLOAT&gt; </td>      <td> := </td>   <td>  </td> </tr>
   <tr> <td> &lt;BOOL&gt; </td>       <td> := </td>   <td> "true" | "false" </td> </tr>
   <tr> <td> &lt;STRING&gt; </td>     <td> := </td>   <td> \" () \" </td> </tr>
 </table>
+</tt>
 
 <p>
 The language keywords (that of course can't be used as identifiers) are
@@ -294,18 +342,20 @@ There can be global variables, see section
 </p>
 
 <p>
-A function has only access to its variables (variables declared inside
-itself) and global variables. If there is a global variable of some
-name, there cannot be any local variable with that name anywhere else
-in the program, as it cannot be created, because this is done by
+A function has only access to its own variables (variables declared
+inside itself) and global variables, not to the callee's variables
+though. If there is a global variable of some name, let's say <i>a</i>,
+there cannot be any local variable with that name, <i>a</i>, anywhere
+else in the program, as it cannot be created, because this is done by
 assignement which in this case just causes assignment to already
-existing global variable.
+existing global variable. This should be reported as an error at
+compile-time.
 </p>
 
 <h3 id="global_directives"> global directives </h3>
 
 <p>
-Global variables can be declared in directive block. To declare a
+Global variables can be declared inside directive blocks. To declare a
 global variable it must also be initialised with a value, using
 "&#8592;" symbol.
 </p>
@@ -315,6 +365,18 @@ Besides global variables, global constants can be declared as well.
 Constants can only be read, any attempt to write to a global constant
 must result in compile-time error. In order to declare a global constant
 a value must be linked to it, using "=" symbol.
+</p>
+
+<h3> control structures </h3>
+
+<p>
+Branching is achieved using the branching blocks. Each block must
+contain exactly one condition written accoording to &lt;COND&gt;
+grammar element. The condition is always an comparison. If the value
+of the comparison is true, the program flow continues with "then"
+branch (coming from top or bottom of the block), otherwise the program
+proceeds to "else" branch (coming from either left or right, see
+the syntax section for more).
 </p>
 
 <h3> expressions </h3>
@@ -333,22 +395,28 @@ Operator priority is as follows:
 </table>
 
 <p>
-The operator semantics is as follows:
+The following table explains the operator semantics. Using the operator
+with data types that are not allowed results either in compile-time (if
+the data types are known at compile time) or run-time (otherwise) error.
 </p>
 
 <table class="normal_table">
   <tr> <th> operator(s) </th>                                         <th> operand types </th>  <th> result type </th>  <th> description </th>    </tr>
-  <tr> <td rowspan="4"> a + b, a - b, a &#215; b, a &#247; b  </td>   <td> int int       </td>  <td> int </td>          <td rowspan="4"> addition, substraction, multiplication and floating point division </td> </tr>
+  <tr> <td rowspan="4"> a + b, a - b, a &#215; b                </td> <td> int int       </td>  <td> int </td>          <td rowspan="4"> addition, substraction, multiplication and floating point division </td> </tr>
   <tr>                                                                <td> float float   </td>  <td> float </td>                                  </tr>
   <tr>                                                                <td> int float     </td>  <td> float </td>                                  </tr>
   <tr>                                                                <td> float int     </td>  <td> float </td>                                  </tr>
+
+  <tr> <td td rowspan="4">a &#247; b                            </td> <td> int int       </td>  <td> float </td> <td rowspan="4"> floating point divide       </td>                 </tr>
+  <tr>                                                           <td> float float       </td> <td> float </td>                  </tr>
+  <tr>                                                           <td> int float       </td> <td> float </td>                  </tr>
+  <tr>                                                           <td> float int       </td> <td> float </td>                  </tr>
+
   <tr> <td rowspan="4"> a &lt; b, a &gt; b, a &le; b, a &ge; b  </td> <td> int int       </td>  <td> bool </td>         <td rowspan="4"> less than, greater than, less or equal to, greater or equal to </td> </tr>
   <tr>                                                                <td> float float   </td>  <td> bool </td>                                   </tr>
   <tr>                                                                <td> int float     </td>  <td> bool </td>                                   </tr>
   <tr>                                                                <td> float int     </td>  <td> bool </td>                                   </tr>
   <tr> <td> &#172; a </td>            <td> bool          </td>  <td> bool </td>    <td> logical negation (false to true and true to false) </td> </tr>
-
-
 </table>
 
 <h3> functions </h3>
@@ -363,6 +431,26 @@ The function can return any atomic data type, lists can't be returned.
 <p>
 Function parameters behave just as if they were variables created at the
 beginning of the function.
+</p>
+
+<p>
+Function declaration and definition are the same thing in flow_chart,
+which means you declare the function as soon as you define it - there
+are no forward declarations as there is no "forward" and "backward" in
+the source image.
+</p>
+
+<p>
+Overloading is allowed, however it can only be used to make multiple
+functions of the same name that differ only by number of parameters
+since functions don't define the data types of their parameters.
+</p>
+
+<p>
+Function return values are also not specified. Function can return any
+value it wishes and it can return different data types at different
+times. If the function ends without returning a value, boolean false
+value is returned implicitly.
 </p>
 
 <h3> built-in functions </h3>
