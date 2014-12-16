@@ -343,7 +343,8 @@ There can be global variables, see section
 
 <p>
 A function has only access to its own variables (variables declared
-inside itself) and global variables, not to the callee's variables
+inside itself and only within the concrete instance of the function
+during recursion) and global variables, not to the callee's variables
 though. If there is a global variable of some name, let's say <i>a</i>,
 there cannot be any local variable with that name, <i>a</i>, anywhere
 else in the program, as it cannot be created, because this is done by
@@ -367,7 +368,49 @@ must result in compile-time error. In order to declare a global constant
 a value must be linked to it, using "=" symbol.
 </p>
 
-<h3> control structures </h3>
+<h3 id="cf"> control flow </h3>
+
+<p>
+Programs in flow_chart are always single thread only.
+</p>
+
+<p>
+The program starts its execution in <tt>main()</tt> function, named exactly
+<tt>main</tt> and having zero parameters, which must be defined in the program
+being run. If such function doesn't exist, the interpreter yields a
+compile-time error.
+</p>
+
+<p>
+The program then proceeds to the next block that is marked with one
+outcoming arrow, then to another one and so on, until the end main
+function is exited either by executing its last block (in which case
+0 is returned to the operating system) or by <tt>return</tt> command
+(in which case the return command's value is returned to the operating
+system, or 0 if it's not of integer data type) or by calling built-in
+<tt>halt()</tt>/<tt>halt(value)</tt> function from anywhere within the
+program being run (the value returned to the operating system is
+specified in the description of the <tt>halt(value)</tt> function).
+</p>
+
+<p>
+If function call (&lt;CALL&gt; grammar element) <i>f(p<sub>1</sub>,p<sub>2</sub>,...,p<sub>n</sub>)</i> is
+encountered during program execution, the control is set to the
+starting block of the function named <i>f</i> that expects exactly <i>n</i>
+parameters, i.e. it's header is <i>f(q<sub>1</sub>,q<sub>2</sub>,...,q<sub>n</sub>)</i>.
+New local variables named <i>q<sub>1</sub> ... q<sub>n</sub></i> are then
+created and assigned values <i>p<sub>1</sub> ... p<sub>2</sub></i> in this
+order. The variables <i>q<sub>1</sub> ... q<sub>n</sub></i> are local to
+the instance of the function <i>f</i>, that means that they are different
+from any other variables named <i>q<sub>1</sub> ... q<sub>n</sub></i>
+anywhere in the program except for the body of the function <i>f</i> and
+they are also different from the same named variables in another instance
+of the function <i>f</i> during recursion, indeed. The variables
+<i>q<sub>1</sub> ... q<sub>n</sub></i> are destroyed when the function
+<i>f</i> ends.
+
+For more information on functions see the section <a href="#func">functions</a>.
+</p>
 
 <p>
 Branching is achieved using the branching blocks. Each block must
@@ -377,6 +420,10 @@ of the comparison is true, the program flow continues with "then"
 branch (coming from top or bottom of the block), otherwise the program
 proceeds to "else" branch (coming from either left or right, see
 the syntax section for more).
+</p>
+
+<p>
+Loops are achieved via branching, as is common with flow charts.
 </p>
 
 <h3> expressions </h3>
@@ -402,12 +449,12 @@ the data types are known at compile time) or run-time (otherwise) error.
 
 <table class="normal_table">
   <tr> <th> operator(s) </th>                                         <th> operand types </th>  <th> result type </th>  <th> description </th>    </tr>
-  <tr> <td rowspan="4"> a + b, a - b, a &#215; b                </td> <td> int int       </td>  <td> int </td>          <td rowspan="4"> addition, substraction, multiplication and floating point division </td> </tr>
+  <tr> <td rowspan="4"> a + b, a - b, a &#215; b                </td> <td> int int       </td>  <td> int </td>          <td rowspan="4"> addition, substraction and multiplication </td> </tr>
   <tr>                                                                <td> float float   </td>  <td> float </td>                                  </tr>
   <tr>                                                                <td> int float     </td>  <td> float </td>                                  </tr>
   <tr>                                                                <td> float int     </td>  <td> float </td>                                  </tr>
 
-  <tr> <td td rowspan="4">a &#247; b                            </td> <td> int int       </td>  <td> float </td> <td rowspan="4"> floating point divide       </td>                 </tr>
+  <tr> <td td rowspan="4">a &#247; b                            </td> <td> int int       </td>  <td> float </td> <td rowspan="4"> floating point division, division by zero (float or int) causes an compile-time (if possible) or runtime-time (othrwise) error.   </td>                 </tr>
   <tr>                                                           <td> float float       </td> <td> float </td>                  </tr>
   <tr>                                                           <td> int float       </td> <td> float </td>                  </tr>
   <tr>                                                           <td> float int       </td> <td> float </td>                  </tr>
@@ -419,7 +466,7 @@ the data types are known at compile time) or run-time (otherwise) error.
   <tr> <td> &#172; a </td>            <td> bool          </td>  <td> bool </td>    <td> logical negation (false to true and true to false) </td> </tr>
 </table>
 
-<h3> functions </h3>
+<h3 id="func"> functions </h3>
 
 <p>
 Recursion, even indirect, is allowed. Parameters of atomic data types
@@ -453,6 +500,11 @@ times. If the function ends without returning a value, boolean false
 value is returned implicitly.
 </p>
 
+<p>
+For more information on functions see the section
+<a href="#cf">control flow</a>.
+</p>
+
 <h3> built-in functions </h3>
 
 <ul>
@@ -479,6 +531,8 @@ value is returned implicitly.
   <li> <tt>wait(milliseconds)</tt> - Stops the program execution for <tt>milliseconds</tt> milliseconds. </li>
   <li> <tt>type(what): string</tt> - Returns a string representing the data type of <tt>what</tt> (<tt>"int"</tt>, <tt>"float"</tt>, <tt>"string"</tt>, <tt>"bool"</tt> or <tt>"list"</tt>).</li>
   <li> <tt>length(what): int</tt> - Returns length of given <tt>what</tt> list or -1 if <tt>what</tt> is not a list. </li>
+  <li> <tt>halt(value): int</tt> - Exits the program immediately returnin integer <tt>value</tt> value to the operating system. If <tt>value</tt> is not of int data type, 0 is used. </li>
+  <li> <tt>halt(): int</tt> - Equal to <tt>exit(0)</tt>. </li>
 </ul>
 
 <h3> standard libraries </h3>
