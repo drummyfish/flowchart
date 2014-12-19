@@ -37,6 +37,10 @@ table
 <body>
 <h1> flow_chart language specification </h1>
 
+<span class="version"> version 0.1 </span>
+
+<br />
+
 <span class="author"> Miloslav Číž, 2014 </span>
 
 <p> This is a specification of flow_chart esoteric language. </p>
@@ -249,16 +253,17 @@ language text elements:
   <tr> <td> command: </td> <td> &lt;CMD&gt; </td>      <td> &#10141; </td>   <td> &lt;ASSIGN&gt; | &lt;CALL&gt; | return &lt;EXP&gt; </td> </tr>
   <tr> <td> assign: </td> <td> &lt;ASSIGN&gt; </td>   <td> &#10141; </td>   <td> &lt;VAR&gt; &#8592; &lt;EXP&gt; | &lt;INIT&gt; </td> </tr>
   <tr> <td> list constructor: </td> <td> &lt;INIT&gt; </td>     <td> &#10141; </td>   <td> list </td> </tr>
-  <tr> <td> variable or list item: </td> <td> &lt;VAR&gt; </td>      <td> &#10141; </td>   <td> &lt;IDENTIFIER&gt; | &lt;IDENTIFIER&gt; [ &lt;EXP&gt; ] </td> </tr>
+  <tr> <td> variable or list item: </td> <td> &lt;VAR&gt; </td>      <td> &#10141; </td>   <td> &lt;IDENTIFIER_NS&gt; | &lt;IDENTIFIER_NS&gt; [ &lt;EXP&gt; ] </td> </tr>
   <tr> <td> expression: </td> <td> &lt;EXP&gt; </td>      <td> &#10141; </td>   <td> ( &lt;EXP&gt; ) | &lt;VAR&gt; | &lt;CALL&gt; | &lt;CONST&gt; | &lt;EXP&gt; &lt;OP&gt; &lt;EXP&gt; </td> </tr>
   <tr> <td> operator: </td> <td> &lt;OP&gt; </td>       <td> &#10141; </td>   <td> + | - | &#247; | / | * | &#215; | % | <img src="images/mod.png" /> | &#172; </td> </tr>
   <tr> <td> literal: </td> <td> &lt;CONST&gt; </td>    <td> &#10141; </td>   <td> &lt;INT&gt; | &lt;FLOAT&gt; | &lt;STRING&gt; | &lt;BOOL&gt; </td> </tr>
   <tr> <td> condition: </td> <td> &lt;COND&gt; </td>     <td> &#10141; </td>   <td> &lt;EXP&gt; &lt;CMP&gt; &lt;EXP&gt; </td> </tr>
   <tr> <td> comparison operators: </td> <td> &lt;CMP&gt; </td>      <td> &#10141; </td>   <td> = | &ne; | "&lt;" | "&gt;" | &ge; | &le; </td> </tr>
-  <tr> <td> function call: </td> <td> &lt;CALL&gt; </td>     <td> &#10141; </td>   <td> &lt;IDENTIFIER&gt; ( &lt;PARAMS&gt; ) </td> </tr>
+  <tr> <td> function call: </td> <td> &lt;CALL&gt; </td>     <td> &#10141; </td>   <td> &lt;IDENTIFIER_NS&gt; ( &lt;PARAMS&gt; ) </td> </tr>
   <tr> <td> function header: </td> <td> &lt;FUNC&gt; </td>     <td> &#10141; </td>   <td> &lt;IDENTIFIER&gt; ( &lt;PARAM_LIST&gt; ) | &lt;IDENTIFIER&gt; () </td> </tr>
   <tr> <td> formal parameter list: </td> <td> &lt;PARAM_LIST&gt; </td>     <td> &#10141; </td>   <td> &lt;IDENTIFIER&gt; | &lt;IDENTIFIER&gt; , &lt;PARAM_LIST&gt; </td> </tr>
-  <tr> <td> directive: </td> <td> &lt;DIR&gt; </td>      <td> &#10141; </td>   <td> uses &lt;PATH&gt; | &lt;IDENTIFIER&gt; = &lt;CONST&gt; | &lt;IDENTIFIER&gt; &#8592; &lt;CONST&gt; </td> </tr>
+  <tr> <td> optional namespace + identifier: </td> <td> &lt;IDENTIFIER_NS&gt; </td>     <td> &#10141; </td>   <td> &lt;IDENTIFIER&gt; : &lt;IDENTIFIER&gt;| &lt;IDENTIFIER&gt; </td> </tr>
+  <tr> <td> directive: </td> <td> &lt;DIR&gt; </td>      <td> &#10141; </td>   <td> include &lt;PATH&gt; | &lt;IDENTIFIER&gt; = &lt;CONST&gt; | &lt;IDENTIFIER&gt; &#8592; &lt;CONST&gt; | namespace &lt;IDENTIFIER&gt; </td> </tr>
 </table>
 </tt>
 
@@ -280,6 +285,7 @@ The language keywords (that of course can't be used as identifiers) are
 shown in the following list:
 </p>
 
+<tt>
 <ul>
   <li> false </li>
   <li> list </li>
@@ -290,6 +296,12 @@ shown in the following list:
   <li> stderr </li>
   <li> stdout </li>
 </ul>
+</tt>
+
+<p>
+besides these, built-in function identifiers can neither be used for user
+identifiers (see <a href="#builtin">built-in functions</a>).
+</p>
 
 <h2> semantics </h2>
 
@@ -459,6 +471,8 @@ the data types are known at compile time) or run-time (otherwise) error.
   <tr>                                                           <td> int float       </td> <td> float </td>                  </tr>
   <tr>                                                           <td> float int       </td> <td> float </td>                  </tr>
 
+  <tr> <td>a <img src="images/mod.png" /> b       </td> <td> int int       </td>  <td> int </td> <td> integer a / b division remainder (modulo) defined as: <ul> <li>if a >= 0: a mod |b| </li> <li>otherwise: the reult is obtained by repeatedly adding |b| to a until a is in range &lt;0,|b-1|&gt; </li> </ul> </td>                 </tr>
+
   <tr> <td rowspan="4"> a &lt; b, a &gt; b, a &le; b, a &ge; b  </td> <td> int int       </td>  <td> bool </td>         <td rowspan="4"> less than, greater than, less or equal to, greater or equal to </td> </tr>
   <tr>                                                                <td> float float   </td>  <td> bool </td>                                   </tr>
   <tr>                                                                <td> int float     </td>  <td> bool </td>                                   </tr>
@@ -505,7 +519,7 @@ For more information on functions see the section
 <a href="#cf">control flow</a>.
 </p>
 
-<h3> built-in functions </h3>
+<h3 id="builtin"> built-in functions </h3>
 
 <ul>
   <li> <tt>print(what,filehandle)</tt> - Prints out the <tt>what</tt> variable, without a newline, to a file with <tt>filehandle</tt> handle. If <tt>filehandle</tt> is not associated with any file, nothing happens. The function does the following depending on the data type of <tt>what</tt>:
@@ -534,6 +548,55 @@ For more information on functions see the section
   <li> <tt>halt(value): int</tt> - Exits the program immediately returnin integer <tt>value</tt> value to the operating system. If <tt>value</tt> is not of int data type, 0 is used. </li>
   <li> <tt>halt(): int</tt> - Equal to <tt>exit(0)</tt>. </li>
 </ul>
+
+<h3> modules </h3>
+
+<p>
+A program in flow_char can be separated into modules, which means its
+source code consists of multiple images in separate files. There is
+always a main module, which is the one where the <tt>main()</tt>
+function is defined.
+</p>
+
+<p>
+To include additional modules into the main module, a directive block
+must be put in the main file with <tt>include "path"</tt> string in it
+(see grammar section), where <tt>path</tt> is the filepath of the module
+being included.
+</p>
+
+<p>
+When the module <i>m</i> is included in the program <i>p</i>, it is
+possible to use all the functions, global variables and global constants
+from <i>m</i> just as if they were declared/defined in <i>p</i>.
+Multiple include directives can be present in the program, even
+referencing the same module, though it is included only once in that
+case.
+</p>
+
+<p>
+flow_chart supports module namespaces, though they needn't be used if
+not necesarry. If there is a symbol (function, global variable or global
+constant) <i>a</i> in both module <i>m</i> and module <i>p</i> and
+<i>m</i> is included from within <i>p</i>, then when <i>a</i> is used
+inside <i>p</i>, <i>a</i> decalred/defined in <i>p</i> is referenced
+by default. To use <i>a</i> declared/defined in <i>m</i> in this case it
+is needed to create a namespace by putting a directive in <i>m</i> with
+string <tt>namespace name</tt> where <tt>name</tt> is the name of the
+namespace for <i>m</i>. A maximum of one namespace directive can be
+present in any one file, otherwise a compile-time error must occur.
+After creating the namespace <i>p</i> can reference the above <i>a</i>
+symbol from <i>m</i> with the syntax <tt>name:</tt><i>a</i>.
+</p>
+
+<p>
+The include directive causes the interpreter to load the module
+internally if it hasn't already been loaded, so it's allowed to even
+have cyclic dependencies between modules formed via include
+directives (<i>m</i> includes <i>p</i> and <i>p</i> includes
+<i>m</i>).
+</p>
+
 
 <h3> standard libraries </h3>
 
