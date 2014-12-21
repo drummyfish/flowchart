@@ -2,7 +2,7 @@ CXX=c++
 CXXFLAGS=-pedantic -Wall -std=c++11 -g -O2
 
 SRCDIR=src
-OBJFILES=$(SRCDIR)/lodepng.o $(SRCDIR)/interpreter.o $(SRCDIR)/image.o
+OBJFILES=$(SRCDIR)/lodepng.o $(SRCDIR)/interpreter.o $(SRCDIR)/image.o $(SRCDIR)/program.o
 
 UNAME := $(shell uname)
 ifeq ($(UNAME), Linux)
