@@ -44,11 +44,10 @@ class image
       inline unsigned int get_width();
 
       inline unsigned int get_height();
-
-      inline void get_pixel(const unsigned int x, const unsigned int y,
+      void get_pixel(const unsigned int x, const unsigned int y,
         unsigned char &red, unsigned char &green, unsigned char &blue);
 
-      inline void set_pixel(const unsigned int x, const unsigned int y,
+      void set_pixel(const unsigned int x, const unsigned int y,
         const char &red, const char &green, const char &blue);
   };
 

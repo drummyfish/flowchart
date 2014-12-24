@@ -1,6 +1,17 @@
 #ifndef GENERAL_H
 #define GENERAL_H
 
+#include <string>
+
+#define FONT_PATH        "font.png"
+#define FONT_WIDTH       7
+#define FONT_HEIGHT      8
+#define FONT_ROW_SYMBOLS 32
+
+using namespace std;
+
+#define is_black(r,g,b)  r == 0 && g == 0 && b == 0
+
 typedef struct
   {
     unsigned int x;
@@ -58,7 +69,10 @@ typedef struct
     coord_2d position;           // position in the image where the error appeared
   } program_error;
 
-typedef struct                   /**< bytecode instruction */
+struct instruction_struct;
+typedef instruction_struct instruction;
+
+struct instruction_struct                   /**< bytecode instruction */
   {
     instruction_type type;
 
@@ -67,6 +81,8 @@ typedef struct                   /**< bytecode instruction */
 
     instruction *jump;           // pointer to another instruction in case of branching etc.
 
-  } instruction;
+  };
+
+coord_2d make_coord(unsigned int x, unsigned int y);
 
 #endif

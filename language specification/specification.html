@@ -228,8 +228,8 @@ pixels.
 The language uses its own fixed size extended ASCII font to represent text
 elements. The character size is 7&nbsp;&#215;&nbsp;8 pixels and there is exactly one
 pixel space between the characters. The font characters look like this
-(starting from top left, going to bottom right with 1 pixel space between
-rows and columns)
+(starting from top left with ASCII value of 0, going to right bottom by
+lines with no space between rows and columns)
 </p>
 
 <img src="images/font.png" alt="font" />
@@ -548,6 +548,53 @@ For more information on functions see the section
   <li> <tt>halt(value): int</tt> - Exits the program immediately returnin integer <tt>value</tt> value to the operating system. If <tt>value</tt> is not of int data type, 0 is used. </li>
   <li> <tt>halt(): int</tt> - Equal to <tt>exit(0)</tt>. </li>
 </ul>
+
+<h3> text recognition </h3>
+
+<p>
+The interpreter must be able to recognize a text written in flow_chart
+bitmap font defined above. The text strings can only appear inside
+blocks and there can only be single line of text string in any block.
+The text must be black and there must be no other black pixels inside
+the block besides the text.
+</p>
+
+<p>
+The text string can appear anywhere inside a block, so the interpreter
+must be able to locate it first. Once the exact location of the text is
+known, it is easy to read the character string by comparing individual
+fixed-size character masks of the font bitmap.
+</p>
+
+<p>
+The interpretation of the string written inside a box may not always be
+unique. This happens either because:
+</p>
+
+<ol type="a">
+  <li>
+    Multiple characters of the flow_chart font have the same appearance
+    and therefore it is not clear which ASCII value the character should
+    be assigned.
+  </li>
+  <li>
+    A character of the flow_chart font looks like another character,
+    just shifted a few pixels in x or y direction (for example '.' and
+    '·'). If then for example only this single character appears in the
+    block, it is not clear which character it actually is. This can
+    often be determined with respect to other characters in the string,
+    if present.
+  </li>
+</ol>
+
+<p>
+The string interpretation ambiguity is solved by not solving it - if
+there are multiple interpretations of given string, the interpreter can
+deal with this as it wishes, most conveniently by writing a warning
+message and choosing the most likely interpretation. These cases should
+however never happen in practice, as all important characters have
+unique look or cannot appear on their own.
+</p>
 
 <h3> modules </h3>
 

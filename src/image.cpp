@@ -64,7 +64,13 @@ bool image::load_png(string filename)
 
 bool image::load_file(string filename)
 {
-  return true;
+  if (this->load_png(filename))
+    return true;
+
+  if (this->load_bmp(filename))
+    return true;
+
+  return false;
 }
 
 bool image::save_bmp(string filename)
