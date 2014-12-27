@@ -13,7 +13,7 @@ bool program::load_from_file(string filename)
 
     // cout << "=" << this->string_from_image_area(&source_image,make_coord(0,0),make_coord(100,100),error) << "=" << endl;
 
-    vector<block> v = this->get_function_blocks(&source_image);
+    vector<block_function> v = this->get_function_blocks(&source_image);
 
     unsigned int i;
 
@@ -23,7 +23,7 @@ bool program::load_from_file(string filename)
       cout << v[i].get_string() << endl;
 
     cout << "directives:" << endl;
-    vector<block> v2 = this->get_directive_blocks(&source_image);
+    vector<block_directive> v2 = this->get_directive_blocks(&source_image);
 
     for (i = 0; i < v2.size(); i++)
       cout << v2[i].get_string() << endl;
@@ -31,12 +31,15 @@ bool program::load_from_file(string filename)
     return true;
   }
 
-vector<block> program::get_directive_function_blocks(image *img, bool directive)
+template<class T>
+vector<T> program::get_directive_function_blocks(image *img)
 
   {
     unsigned int i,j,x,y;
-    vector<block> result;
+    vector<T> result;
     coord_2d c1, c2;
+
+    bool directive = switch_value<T>::value == 0;  // whether directive or function blocks are being looked for
 
     for (j = 0; j < img->get_height(); j++)
       for (i = 0; i < img->get_width(); i++)
@@ -155,13 +158,9 @@ vector<block> program::get_directive_function_blocks(image *img, bool directive)
 
                   block_string = this->string_from_image_area(img,make_coord(c1.x + 3,c1.y + 3),make_coord(c2.x - 3,c2.y - 3),error);
 
-                  block_function bf(block_string);
-                  block_directive bd(block_string);
+                  T b(block_string);
 
-                  if (directive)
-                    result.push_back(bd);
-                  else
-                    result.push_back(bf);
+                  result.push_back(b);
                 }
             }
         }
@@ -169,14 +168,14 @@ vector<block> program::get_directive_function_blocks(image *img, bool directive)
     return result;
   }
 
-vector<block> program::get_directive_blocks(image *img)
+vector<block_directive> program::get_directive_blocks(image *img)
   {
-    return get_directive_function_blocks(img,true);
+    return get_directive_function_blocks<block_directive>(img);
   }
 
-vector<block> program::get_function_blocks(image *img)
+vector<block_function> program::get_function_blocks(image *img)
   {
-    return get_directive_function_blocks(img,false);
+    return get_directive_function_blocks<block_function>(img);
   }
 
 int program::char_from_image_position(image *img, coord_2d c)

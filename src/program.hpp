@@ -14,6 +14,21 @@
  Represents a program in flow_chart.
  */
 
+template<typename T>    // these three are needed for template branching
+struct switch_value {};
+
+template<>
+struct switch_value<block_directive>
+{
+  enum { value = 0 };
+};
+
+template<>
+struct switch_value<block_function>
+{
+  enum { value = 1 };
+};
+
 class program
   {
     protected:
@@ -69,17 +84,17 @@ class program
 
        */
 
-      vector<block> get_directive_function_blocks(image *img, bool directive);
+      template<class T>
+      vector<T> get_directive_function_blocks(image *img);
       /**<
        Helper function for get_function_blocks and get_directive_blocks.
+       T is either block_directive or block_function.
 
        @param img image
-       @param directive if true, directive blocks will be looked for,
-              otherwise function blocks will be searched
        @return list of blocks
        */
 
-      vector<block> get_directive_blocks(image *img);
+      vector<block_directive> get_directive_blocks(image *img);
 
       /**<
        Gets all directive blocks in given image as a list.
@@ -88,7 +103,7 @@ class program
        @return vector of directive_blocks
        */
 
-      vector<block> get_function_blocks(image *img);
+      vector<block_function> get_function_blocks(image *img);
 
     public:
       bool load_from_file(string filename);
