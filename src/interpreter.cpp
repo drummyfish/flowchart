@@ -8,7 +8,7 @@ int main()
   {
     program p;
 
-    cout << p.load_from_file("test3.bmp") << endl;
+    p.load_from_file("test3.bmp");
 
     return 0;
   }

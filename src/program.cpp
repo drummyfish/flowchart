@@ -13,27 +13,29 @@ bool program::load_from_file(string filename)
 
     // cout << "=" << this->string_from_image_area(&source_image,make_coord(0,0),make_coord(100,100),error) << "=" << endl;
 
-    vector<block_function> v = this->get_function_blocks(&source_image);
+    vector<block> v = this->get_function_blocks(&source_image);
 
     unsigned int i;
+
+    cout << "functions:" << endl;
 
     for (i = 0; i < v.size(); i++)
       cout << v[i].get_string() << endl;
 
+    cout << "directives:" << endl;
+    vector<block> v2 = this->get_directive_blocks(&source_image);
+
+    for (i = 0; i < v2.size(); i++)
+      cout << v2[i].get_string() << endl;
+
     return true;
   }
 
-vector<block_directive> program::get_directive_blocks(image *img)
-  {
-    vector<block_directive> result;
+vector<block> program::get_directive_function_blocks(image *img, bool directive)
 
-    return result;
-  }
-
-vector<block_function> program::get_function_blocks(image *img)
   {
     unsigned int i,j,x,y;
-    vector<block_function> result;
+    vector<block> result;
     coord_2d c1, c2;
 
     for (j = 0; j < img->get_height(); j++)
@@ -47,10 +49,10 @@ vector<block_function> program::get_function_blocks(image *img)
             img->pixel_is_black(i + 1,j) &&
             img->pixel_is_black(i + 2,j) &&
             img->pixel_is_black(i,j + 1)     &&
-            img->pixel_is_black(i + 1,j + 1) &&
-            img->pixel_is_black(i + 2,j + 1) &&
+            directive != img->pixel_is_black(i + 1,j + 1) &&
+            directive != img->pixel_is_black(i + 2,j + 1) &&
             img->pixel_is_black(i,j + 2)     &&
-            img->pixel_is_black(i + 1,j + 2) &&
+            directive != img->pixel_is_black(i + 1,j + 2) &&
             img->pixel_is_black(i + 2,j + 2))
             {
               // try to follow the block border now:
@@ -63,7 +65,7 @@ vector<block_function> program::get_function_blocks(image *img)
 
               while (   // upper horizontal border
                 img->pixel_is_black(x + 1,y)     &&
-                img->pixel_is_black(x + 1,y + 1) &&
+                directive != img->pixel_is_black(x + 1,y + 1) &&    // the middle pixel differs for function and directive block
                 img->pixel_is_black(x + 1,y + 2))
                 {
                   x++;
@@ -72,34 +74,76 @@ vector<block_function> program::get_function_blocks(image *img)
               i = x + 1;   // i can skip here now
               y += 2;
 
+              if (directive)    // with directive blocks we have to checks corners
+                {
+                  if (!(
+                    !img->pixel_is_black(x + 1,y - 1) &&
+                    img->pixel_is_black(x + 2,y - 1) &&
+                    img->pixel_is_black(x + 2,y - 2) &&
+                    img->pixel_is_black(x + 1,y - 2)))
+                    break;    // corner not valid
+
+                  x += 2;
+                }
+
               while (   // right verticel border
                 img->pixel_is_black(x,y + 1)     &&
-                img->pixel_is_black(x - 1,y + 1) &&
+                directive != img->pixel_is_black(x - 1,y + 1) &&
                 img->pixel_is_black(x - 2,y + 1))
                 {
                   y++;
                 }
 
+              if (directive)
+                {
+                  if (!(
+                    img->pixel_is_black(x,y + 1) &&
+                    img->pixel_is_black(x,y + 2) &&
+                    !img->pixel_is_black(x - 1,y + 1) &&
+                    img->pixel_is_black(x - 1,y + 2)))
+                    break;    // corner not valid
+                  x -= 2;
+                  y += 2;
+                }
+
               c2.x = x;
               c2.y = y;
 
+              if (directive)
+                c2.x += 2;
+
               while (   // lower horizontal border
                 img->pixel_is_black(x - 1,y)     &&
-                img->pixel_is_black(x - 1,y - 1) &&
+                directive != img->pixel_is_black(x - 1,y - 1) &&
                 img->pixel_is_black(x - 1,y - 2))
                 {
                   x--;
+                }
+
+              if (directive)
+                {
+                  if (!(
+                    img->pixel_is_black(x - 1,y) &&
+                    img->pixel_is_black(x - 2,y) &&
+                    !img->pixel_is_black(x - 1,y - 1) &&
+                    img->pixel_is_black(x - 2,y - 1)))
+                    break;    // corner not valid
+
+                  x -= 2;
                 }
 
               y -= 2;
 
               while (   // left vertical border
                 img->pixel_is_black(x,y - 1)     &&
-                img->pixel_is_black(x + 1,y - 1) &&
+                directive != img->pixel_is_black(x + 1,y - 1) &&
                 img->pixel_is_black(x + 2,y - 1))
                 {
                   y--;
                 }
+
+              if (directive)
+                y -= 2;
 
               if (
                 x == c1.x && y == c1.y &&          // block detected
@@ -111,14 +155,28 @@ vector<block_function> program::get_function_blocks(image *img)
 
                   block_string = this->string_from_image_area(img,make_coord(c1.x + 3,c1.y + 3),make_coord(c2.x - 3,c2.y - 3),error);
 
-                  block_function b(block_string);
+                  block_function bf(block_string);
+                  block_directive bd(block_string);
 
-                  result.push_back(b);
+                  if (directive)
+                    result.push_back(bd);
+                  else
+                    result.push_back(bf);
                 }
             }
         }
 
     return result;
+  }
+
+vector<block> program::get_directive_blocks(image *img)
+  {
+    return get_directive_function_blocks(img,true);
+  }
+
+vector<block> program::get_function_blocks(image *img)
+  {
+    return get_directive_function_blocks(img,false);
   }
 
 int program::char_from_image_position(image *img, coord_2d c)

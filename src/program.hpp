@@ -69,7 +69,17 @@ class program
 
        */
 
-      vector<block_directive> get_directive_blocks(image *img);
+      vector<block> get_directive_function_blocks(image *img, bool directive);
+      /**<
+       Helper function for get_function_blocks and get_directive_blocks.
+
+       @param img image
+       @param directive if true, directive blocks will be looked for,
+              otherwise function blocks will be searched
+       @return list of blocks
+       */
+
+      vector<block> get_directive_blocks(image *img);
 
       /**<
        Gets all directive blocks in given image as a list.
@@ -78,7 +88,7 @@ class program
        @return vector of directive_blocks
        */
 
-      vector<block_function> get_function_blocks(image *img);
+      vector<block> get_function_blocks(image *img);
 
     public:
       bool load_from_file(string filename);
