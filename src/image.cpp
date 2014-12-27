@@ -127,21 +127,24 @@ unsigned int image::get_height()
 void image::get_pixel(const unsigned int x, const unsigned int y,
   unsigned char &red, unsigned char &green, unsigned char &blue)
 {
-  if (this->bmp_image != NULL)
+  if (this->bmp_image != NULL && x < this->bmp_image->width() && y < this->bmp_image->height())
     {
       this->bmp_image->get_pixel(x,y,red,green,blue);
     }
   else
     {
-      red = 0;
-      green = 0;
-      blue = 0;
+      red = 255;
+      green = 255;
+      blue = 255;
     }
 }
 
 void image::set_pixel(const unsigned int x, const unsigned int y,
   const char &red, const char &green, const char &blue)
 {
+  if (x >= this->bmp_image->width() || y >= this->bmp_image->height())
+    return;
+
   if (this->bmp_image != NULL)
     this->bmp_image->set_pixel(x,y,red,green,blue);
 }

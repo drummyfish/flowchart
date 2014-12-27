@@ -2,6 +2,8 @@
 #define GENERAL_H
 
 #include <string>
+#include <iostream>
+#include <algorithm>
 
 #define FONT_PATH        "font.png"
 #define FONT_WIDTH       7
@@ -84,5 +86,10 @@ struct instruction_struct                   /**< bytecode instruction */
   };
 
 coord_2d make_coord(unsigned int x, unsigned int y);
+void print_coord(coord_2d c);
+int saturate(int value, int min, int max);
+string trim_left(string s);
+string trim_right(string s);
+string trim(string s);
 
 #endif

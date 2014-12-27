@@ -18,6 +18,38 @@ class program
     protected:
       image font_mask;
 
+      int char_from_image_position(image *img, coord_2d c);
+
+      /**<
+       Compares all flow_chart font characters to given area in image
+       whether it matches any and if so, the character is returned.
+
+       @param img image in which the character should be compared
+       @param c character top left coordinate in the image
+
+       @return character ASCII code or -1 if no character was matched
+       */
+
+      string string_from_image_position(image *img, coord_2d c, unsigned int max_x, bool &success);
+
+      /**<
+       Tries to read a string written in given image and at given
+       position in flow_chart font. The string to be read must consist
+       of at least one character that has at least one black pixel in
+       it in order to be succesfully read.
+
+       @param img image from which the string should be read
+       @param c string top left coordinate in the image
+       @param max_x maximum x coordinate to which the string should be
+              read
+       @param success in this variable a success flag will be returned
+              (true - string read succesfully, false otherwise)
+
+       @return the string that was read with leading and trailing spaces
+               stripped in case of success or "" in case the string
+               could not be read
+       */
+
       string string_from_image_area(image *img, coord_2d c1, coord_2d c2, bool &error);
 
       /**<
