@@ -41,9 +41,11 @@ class image
       bool save_bmp(string filename);
       bool save_png(string filename);
 
-      inline unsigned int get_width();
+      bool pixel_is_black(unsigned int x, unsigned int y);
 
-      inline unsigned int get_height();
+      unsigned int get_width();
+      unsigned int get_height();
+
       void get_pixel(const unsigned int x, const unsigned int y,
         unsigned char &red, unsigned char &green, unsigned char &blue);
 

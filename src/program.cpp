@@ -11,11 +11,115 @@ bool program::load_from_file(string filename)
     if (!source_image.load_file(filename))
       return false;
 
-    cout << "=" << this->string_from_image_area(&source_image,make_coord(0,0),make_coord(100,100),error) << "=" << endl;
+    // cout << "=" << this->string_from_image_area(&source_image,make_coord(0,0),make_coord(100,100),error) << "=" << endl;
+
+    vector<block_function> v = this->get_function_blocks(&source_image);
+
+    unsigned int i;
+
+    for (i = 0; i < v.size(); i++)
+      cout << v[i].get_string() << endl;
 
     return true;
   }
 
+vector<block_directive> program::get_directive_blocks(image *img)
+  {
+    vector<block_directive> result;
+
+    return result;
+  }
+
+vector<block_function> program::get_function_blocks(image *img)
+  {
+    unsigned int i,j,x,y;
+    vector<block_function> result;
+    coord_2d c1, c2;
+
+    for (j = 0; j < img->get_height(); j++)
+      for (i = 0; i < img->get_width(); i++)
+        {
+          if (   // function block corner
+            !img->pixel_is_black(i - 1,j)     &&
+            !img->pixel_is_black(i - 1,j - 1) &&
+            !img->pixel_is_black(i,j - 1) &&
+            img->pixel_is_black(i,j)     &&
+            img->pixel_is_black(i + 1,j) &&
+            img->pixel_is_black(i + 2,j) &&
+            img->pixel_is_black(i,j + 1)     &&
+            img->pixel_is_black(i + 1,j + 1) &&
+            img->pixel_is_black(i + 2,j + 1) &&
+            img->pixel_is_black(i,j + 2)     &&
+            img->pixel_is_black(i + 1,j + 2) &&
+            img->pixel_is_black(i + 2,j + 2))
+            {
+              // try to follow the block border now:
+
+              c1.x = i;
+              c1.y = j;
+
+              x = i + 2;
+              y = j;
+
+              while (   // upper horizontal border
+                img->pixel_is_black(x + 1,y)     &&
+                img->pixel_is_black(x + 1,y + 1) &&
+                img->pixel_is_black(x + 1,y + 2))
+                {
+                  x++;
+                }
+
+              i = x + 1;   // i can skip here now
+              y += 2;
+
+              while (   // right verticel border
+                img->pixel_is_black(x,y + 1)     &&
+                img->pixel_is_black(x - 1,y + 1) &&
+                img->pixel_is_black(x - 2,y + 1))
+                {
+                  y++;
+                }
+
+              c2.x = x;
+              c2.y = y;
+
+              while (   // lower horizontal border
+                img->pixel_is_black(x - 1,y)     &&
+                img->pixel_is_black(x - 1,y - 1) &&
+                img->pixel_is_black(x - 1,y - 2))
+                {
+                  x--;
+                }
+
+              y -= 2;
+
+              while (   // left vertical border
+                img->pixel_is_black(x,y - 1)     &&
+                img->pixel_is_black(x + 1,y - 1) &&
+                img->pixel_is_black(x + 2,y - 1))
+                {
+                  y--;
+                }
+
+              if (
+                x == c1.x && y == c1.y &&          // block detected
+                c2.x - c1.x > FONT_WIDTH + 6 &&    // minimum block size to have at least one character
+                c2.y - c1.y > FONT_HEIGHT + 6)
+                {
+                  string block_string;
+                  bool error;
+
+                  block_string = this->string_from_image_area(img,make_coord(c1.x + 3,c1.y + 3),make_coord(c2.x - 3,c2.y - 3),error);
+
+                  block_function b(block_string);
+
+                  result.push_back(b);
+                }
+            }
+        }
+
+    return result;
+  }
 
 int program::char_from_image_position(image *img, coord_2d c)
   {

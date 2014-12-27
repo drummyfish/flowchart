@@ -8,6 +8,7 @@
 #include <vector>
 #include "general.hpp"
 #include "image.hpp"
+#include "block.hpp"
 
 /**
  Represents a program in flow_chart.
@@ -65,7 +66,19 @@ class program
               occured will be returned
        @return extracted string or "" in case there is none or if there
                was an error
+
        */
+
+      vector<block_directive> get_directive_blocks(image *img);
+
+      /**<
+       Gets all directive blocks in given image as a list.
+
+       @param img image
+       @return vector of directive_blocks
+       */
+
+      vector<block_function> get_function_blocks(image *img);
 
     public:
       bool load_from_file(string filename);
