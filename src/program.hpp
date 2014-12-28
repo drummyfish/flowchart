@@ -105,6 +105,8 @@ class program
 
       vector<block_function> get_function_blocks(image *img);
 
+      vector<block_command> get_command_blocks(image *img);
+
     public:
       bool load_from_file(string filename);
 

@@ -20,20 +20,99 @@ bool program::load_from_file(string filename)
     cout << "functions:" << endl;
 
     for (i = 0; i < v.size(); i++)
-      cout << v[i].get_string() << endl;
+      {
+        cout << v[i].get_string() << ": " << endl;
+        print_coord(v[i].get_top_left());
+        print_coord(v[i].get_bottom_right());
+      }
 
     cout << "directives:" << endl;
     vector<block_directive> v2 = this->get_directive_blocks(&source_image);
 
     for (i = 0; i < v2.size(); i++)
-      cout << v2[i].get_string() << endl;
+      {
+        cout << v2[i].get_string() << ": " << endl;
+        print_coord(v2[i].get_top_left());
+        print_coord(v2[i].get_bottom_right());
+      }
+
+    cout << "commands:" << endl;
+    vector<block_command> v3 = this->get_command_blocks(&source_image);
+
+    for (i = 0; i < v3.size(); i++)
+      {
+        cout << v3[i].get_string() << ": " << endl;
+        print_coord(v3[i].get_top_left());
+        print_coord(v3[i].get_bottom_right());
+      }
 
     return true;
   }
 
+vector<block_command> program::get_command_blocks(image *img)
+  {
+    unsigned int i, j, x, y;
+    coord_2d c1, c2;
+    vector<block_command> result;
+
+    for (j = 0; j < img->get_height(); j++)
+      for (i = 0; i < img->get_width(); i++)
+        {
+          if (   // block corner
+            img->pixel_is_black(i,j)     &&
+            img->pixel_is_black(i + 1,j) &&
+            img->pixel_is_black(i,j + 1) &&
+            !img->pixel_is_black(i + 1,j + 1))
+            {
+              c1.x = i;
+              c1.y = j;
+
+              x = i + 1;
+              y = j;
+
+              // trace the block border:
+
+              while (img->pixel_is_black(x + 1,y))
+                x++;
+
+              i = x;    // i can skip here
+
+              if (x - c1.x < FONT_WIDTH + 2)       // the block must be at least one character wide + borders
+                continue;
+
+              while (img->pixel_is_black(x,y + 1))
+                y++;
+
+              c2.x = x;
+              c2.y = y;
+
+              if (c2.y - c1.y < FONT_HEIGHT + 2)   // the block must be at least one character high
+                continue;
+
+              while (img->pixel_is_black(x - 1,y))
+                x--;
+
+              while (img->pixel_is_black(x,y - 1))
+                y--;
+
+              if (x == c1.x && y == c1.y)
+                {
+                  string block_string;
+                  bool error;
+
+                  block_string = this->string_from_image_area(img,make_coord(c1.x + 1,c1.y + 1),make_coord(c2.x - 1,c2.y - 1),error);
+
+                  block_command b(block_string,c1,c2);
+                  result.push_back(b);
+                }
+            }
+        }
+
+    return result;
+  }
+
 template<class T>
 vector<T> program::get_directive_function_blocks(image *img)
-
   {
     unsigned int i,j,x,y;
     vector<T> result;
@@ -44,7 +123,7 @@ vector<T> program::get_directive_function_blocks(image *img)
     for (j = 0; j < img->get_height(); j++)
       for (i = 0; i < img->get_width(); i++)
         {
-          if (   // function block corner
+          if (   // block corner
             !img->pixel_is_black(i - 1,j)     &&
             !img->pixel_is_black(i - 1,j - 1) &&
             !img->pixel_is_black(i,j - 1) &&
@@ -84,10 +163,13 @@ vector<T> program::get_directive_function_blocks(image *img)
                     img->pixel_is_black(x + 2,y - 1) &&
                     img->pixel_is_black(x + 2,y - 2) &&
                     img->pixel_is_black(x + 1,y - 2)))
-                    break;    // corner not valid
+                    continue;    // corner not valid
 
                   x += 2;
                 }
+
+              if (x - c1.x < FONT_WIDTH + 6)       // the block must be at least one character wide + borders
+                continue;
 
               while (   // right verticel border
                 img->pixel_is_black(x,y + 1)     &&
@@ -97,6 +179,9 @@ vector<T> program::get_directive_function_blocks(image *img)
                   y++;
                 }
 
+              if (c2.y - c1.y < FONT_HEIGHT + 6)   // the block must be at least one character high
+                continue;
+
               if (directive)
                 {
                   if (!(
@@ -104,7 +189,7 @@ vector<T> program::get_directive_function_blocks(image *img)
                     img->pixel_is_black(x,y + 2) &&
                     !img->pixel_is_black(x - 1,y + 1) &&
                     img->pixel_is_black(x - 1,y + 2)))
-                    break;    // corner not valid
+                    continue;    // corner not valid
                   x -= 2;
                   y += 2;
                 }
@@ -130,7 +215,7 @@ vector<T> program::get_directive_function_blocks(image *img)
                     img->pixel_is_black(x - 2,y) &&
                     !img->pixel_is_black(x - 1,y - 1) &&
                     img->pixel_is_black(x - 2,y - 1)))
-                    break;    // corner not valid
+                    continue;    // corner not valid
 
                   x -= 2;
                 }
@@ -148,17 +233,14 @@ vector<T> program::get_directive_function_blocks(image *img)
               if (directive)
                 y -= 2;
 
-              if (
-                x == c1.x && y == c1.y &&          // block detected
-                c2.x - c1.x > FONT_WIDTH + 6 &&    // minimum block size to have at least one character
-                c2.y - c1.y > FONT_HEIGHT + 6)
+              if (x == c1.x && y == c1.y)          // block detected
                 {
                   string block_string;
                   bool error;
 
                   block_string = this->string_from_image_area(img,make_coord(c1.x + 3,c1.y + 3),make_coord(c2.x - 3,c2.y - 3),error);
 
-                  T b(block_string);
+                  T b(block_string,c1,c2);
 
                   result.push_back(b);
                 }
